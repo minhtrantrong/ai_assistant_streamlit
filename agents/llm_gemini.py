@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from typing import Any, Dict, List, Optional, Union
 from langchain_core.language_models.llms import LLM
 from langchain_core.callbacks import CallbackManagerForLLMRun
-
+from agno.models.response import ModelResponse
 
 
 load_dotenv()
@@ -12,7 +12,7 @@ GOOGLE_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GOOGLE_API_KEY:
     raise ValueError("GEMINI_API_KEY not found in environment variables. Please set it in your .env file.")
 
-genai.configure(api_key=GOOGLE_API_KEY)
+genai.configure(api_key="AIzaSyAK7ICouZV5llZ7U8-q3Srbo8Yxs8f14kk")
 model_name = 'gemini-2.5-flash'
 model = genai.GenerativeModel(model_name)
 
@@ -81,12 +81,14 @@ class GeminiFlashLLM(LLM):
         """
         return self.get_instructions_for_model(tools)
     
-    def response(self, messages, **kwargs):
+    def response(self, messages, **kwargs) -> ModelResponse:
         """
         Processes messages and returns a ModelResponse object.
         """
         if not messages:
-            return None
+            return ModelResponse(
+                content=""
+            )
 
         if isinstance(messages, str):
             user_message_content = messages
@@ -106,8 +108,21 @@ class GeminiFlashLLM(LLM):
             model_response = model.generate_content(user_message_content)
             response_text = model_response.text if model_response.text else ""
             
-            return response_text
+            return ModelResponse(
+                content=response_text
+            )
         except Exception as e:
-            return f"Error generating response: {e}"
+            return ModelResponse(
+                content=f"Error generating response: {e}"
+            )
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Returns a dictionary representation of the model.
+        """
+        return {
+            "id": self.id,
+            "type": self._llm_type,
+            "provider": self.provider,
+        }
 # This is the instance that you will import and use
 llm = GeminiFlashLLM()
