@@ -111,7 +111,7 @@ if user_input := st.chat_input("What do you need help with?"):
                 template_contents = [tpl['content'] for tpl in st.session_state.uploaded_templates]
 
                 if doc_contents or template_contents:
-                    print("Reporting agent working ...")
+                    print(f"Reporting agent will process this request {user_input} ...")
                     
                     # NEW: Create an instance of the ReportAgent
                     report_agent = ReportAgent()

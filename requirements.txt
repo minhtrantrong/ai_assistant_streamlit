@@ -1,6 +1,10 @@
 streamlit>=1.36.0
 google-generativeai>=0.8.5
+google-genai
 python-dotenv>=1.0.1
 pypdf==6.0.0
 langchain
 langchain_community
+agno
+googlesearch-python
+pycountry
