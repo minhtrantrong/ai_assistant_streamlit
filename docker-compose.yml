@@ -1,0 +1,15 @@
+services:
+  mongodb:
+    image: mongo:5.0.15
+    container_name: ai_assistant_mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      - "27018:27017"
+    volumes:
+      - ai_assistant_mongo_data:/data/db
+
+volumes:
+  ai_assistant_mongo_data:
+  

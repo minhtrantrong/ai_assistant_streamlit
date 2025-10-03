@@ -5,7 +5,9 @@ from typing import Any, Dict, List, Optional, Union
 from langchain_core.language_models.llms import LLM
 from langchain_core.callbacks import CallbackManagerForLLMRun
 from agno.models.response import ModelResponse
-
+from memories.chat_memo import insert_chat
+from schemas.chat_schema import ChatSchema, Message
+from memories.chat_memo import get_short_term_chats
 
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -30,7 +32,28 @@ class GeminiFlashLLM(LLM):
         **kwargs: Any,
     ) -> str:
         try:
-            response = model.generate_content(prompt)
+            history_chat = (
+            prompt
+            + "\nHistory chat:\n"
+            + "\n".join(get_short_term_chats())
+                            )
+            response = model.generate_content(history_chat)
+
+            # Extract the user's request from the prompt
+            parts = prompt.split("User's request:")
+            # parts[1] contains the user's request
+            user_request = parts[1].strip()
+            chat = ChatSchema(
+                user_id="68de178ad00512680f25bed5",
+                message=[
+                    Message(
+                        user_message=user_request,
+                        bot_message=response.text
+                    )
+                ],
+            )
+            
+            insert_chat(chat)
             return response.text
         except Exception as e:
             return f"An error occurred: {e}"
@@ -103,11 +126,9 @@ class GeminiFlashLLM(LLM):
                 user_message_content = str(messages[-1])
         else:
             user_message_content = str(messages)
-        
         try:
             model_response = model.generate_content(user_message_content)
             response_text = model_response.text if model_response.text else ""
-            
             return ModelResponse(
                 content=response_text
             )
