@@ -7,7 +7,10 @@ from agno.models.response import ModelResponse
 from agents.llm_gemini import llm
 from prompts.report import REPORT_PROMPT, VIETNAMESE_REPORTING_TEMPLATE
 from agents.research_agent import ResearchAgent  # NEW: Import the ResearchAgent
-
+from memories.chat_memo import insert_chat
+from schemas.chat_schema import ChatSchema, Message
+from memories.chat_memo import get_short_term_chats
+from uuid import uuid4
 class ReportAgent(Agent):
     """
     A specialized agent for creating ESG reports in Vietnamese.
@@ -60,14 +63,29 @@ class ReportAgent(Agent):
             f"Sử dụng công cụ `research_agent` để tìm kiếm thông tin bổ sung {research_content}.\n\n"
             f"{VIETNAMESE_REPORTING_TEMPLATE}\n\n"
         )
-        
-        
-        
         try:
             # The `self.run()` method orchestrates the chain-of-thought and tool calls.
             # It will automatically decide if it needs to call `research_agent.execute()`.
+            history_chat = (
+            user_request
+            + "\nHistory chat:\n"
+            + "\n".join(get_short_term_chats())
+                            )
+            my_session = uuid4()
+
             report_content = self.run(full_prompt)
+
+            chat = ChatSchema(
+                session_id=str(my_session),
+                message=[
+                    Message(
+                        user_message=user_request,
+                        bot_message=report_content.content
+                    )
+                ],
+            )
             
+            insert_chat(chat)
             # The final content is what the model generates after its reasoning loop.
             return ModelResponse(content=report_content.content)
             

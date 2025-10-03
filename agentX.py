@@ -5,6 +5,7 @@ from agents.llm_gemini import llm
 from prompts.chatbot import CHATBOT_PROMPT
 from agents.report_agent import ReportAgent  
 from dotenv import load_dotenv
+
 load_dotenv()
 
 # Set page configuration with a wide layout and a title.

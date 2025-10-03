@@ -8,7 +8,7 @@ from agno.models.response import ModelResponse
 from memories.chat_memo import insert_chat
 from schemas.chat_schema import ChatSchema, Message
 from memories.chat_memo import get_short_term_chats
-
+from uuid import uuid4
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GOOGLE_API_KEY:
@@ -38,13 +38,13 @@ class GeminiFlashLLM(LLM):
             + "\n".join(get_short_term_chats())
                             )
             response = model.generate_content(history_chat)
-
             # Extract the user's request from the prompt
             parts = prompt.split("User's request:")
             # parts[1] contains the user's request
             user_request = parts[1].strip()
+            my_session = uuid4()
             chat = ChatSchema(
-                user_id="68de178ad00512680f25bed5",
+                session_id=str(my_session),
                 message=[
                     Message(
                         user_message=user_request,
