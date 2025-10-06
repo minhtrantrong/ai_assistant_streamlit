@@ -16,9 +16,18 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 if "uploaded_docs" not in st.session_state:
     st.session_state.uploaded_docs = []
+    text_content = extract_text_from_pdf("./data/ESG.pdf")
+    st.session_state.uploaded_docs.append({
+        "name": "ESG.pdf",
+        "content": text_content
+    })
 if "uploaded_templates" not in st.session_state:
     st.session_state.uploaded_templates = []
-
+    text_content = extract_text_from_pdf("./data/ESG-template.pdf")
+    st.session_state.uploaded_docs.append({
+        "name": "ESG-template.pdf",
+        "content": text_content
+    })
 # --- Left Panel for Document Upload and Display ---
 with st.sidebar:
     st.title("📁 Documents")
