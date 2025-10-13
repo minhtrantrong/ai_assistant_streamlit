@@ -10,8 +10,8 @@ from agno.models.response import ModelResponse
 from agno.tools.googlesearch import GoogleSearchTools
 from agents.llm_gemini import llm
 from prompts.research import RESEARCH_PROMPT
-
-
+from schemas.chat_schema import ChatSchema, Message
+from memories.chat_memo import insert_chat
 
 # Ensure the Gemini API key is loaded
 from dotenv import load_dotenv
@@ -57,13 +57,25 @@ class ResearchAgent(Agent):
 
         try:
             initial_prompt = (
+                f"Use tools available to search any question from user."
+                f"{self.search_tool}\n\n"
+                f"{self.instructions[0]}\n\n"
                 f"Query: {user_request}"
             )
             
             # The `self.run()` method automatically uses the model and tools
             # passed in the __init__ method.
             response = self.run(initial_prompt)
-
+            chat = ChatSchema(
+                session_id="cb9caadc-20b3-4c10-9969-669beb8a62cb",
+                message=[
+                    Message(
+                        user_message=user_request,
+                        bot_message=response.content
+                    )
+                ],
+            )
+            insert_chat(chat)
             return response
             
         except Exception as e:

@@ -9,6 +9,9 @@ from memories.chat_memo import insert_chat
 from schemas.chat_schema import ChatSchema, Message
 from memories.chat_memo import get_short_term_chats
 from uuid import uuid4
+# from memories.pow_consumption_memo import get_history_consumption
+import re
+import json
 load_dotenv()
 GOOGLE_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GOOGLE_API_KEY:
@@ -23,7 +26,7 @@ class GeminiFlashLLM(LLM):
     @property
     def _llm_type(self) -> str:
         return "gemini-flash"
-
+#  + str(get_history_consumption()
     def _call(
         self,
         prompt: str,
@@ -37,14 +40,29 @@ class GeminiFlashLLM(LLM):
             + "\nHistory chat:\n"
             + "\n".join(get_short_term_chats())
                             )
+            
             response = model.generate_content(history_chat)
+            # Extract the date range if response contains it
+            if "date_range" in response.text:
+                match = re.search(r'date_range\s*=\s*\{[^}]*\}', response.text)
+                if match:
+                    date_range_str = match.group(0)
+                    date_range_str = re.sub(r'date_range\s*=\s*', '', date_range_str)
+                    date_range_str = date_range_str.rstrip(",")
+                    date_range_str = date_range_str.strip()
+                    date_range = json.loads(date_range_str)
+                    start_month = date_range["startMonth"]
+                    end_month = date_range["endMonth"]
+                    print(f"Extracted date_range: {start_month}")
+                    print(f"Extracted date_range: {end_month}")
+                    
             # Extract the user's request from the prompt
             parts = prompt.split("User's request:")
             # parts[1] contains the user's request
             user_request = parts[1].strip()
             my_session = uuid4()
             chat = ChatSchema(
-                session_id=str(my_session),
+                session_id="cb9caadc-20b3-4c10-9969-669beb8a62cb",
                 message=[
                     Message(
                         user_message=user_request,
@@ -56,6 +74,7 @@ class GeminiFlashLLM(LLM):
             insert_chat(chat)
             return response.text
         except Exception as e:
+            print(f"An error occurred: {e}")
             return f"An error occurred: {e}"
 
     def _get_api_key(self) -> str:

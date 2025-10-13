@@ -10,6 +10,7 @@ from agents.research_agent import ResearchAgent  # NEW: Import the ResearchAgent
 from memories.chat_memo import insert_chat
 from schemas.chat_schema import ChatSchema, Message
 from memories.chat_memo import get_short_term_chats
+# from memories.pow_consumption_memo import get_history_consumption
 from uuid import uuid4
 class ReportAgent(Agent):
     """
@@ -66,6 +67,7 @@ class ReportAgent(Agent):
         try:
             # The `self.run()` method orchestrates the chain-of-thought and tool calls.
             # It will automatically decide if it needs to call `research_agent.execute()`.
+            #  + str(get_history_consumption()
             history_chat = (
             user_request
             + "\nHistory chat:\n"

@@ -8,3 +8,4 @@ def insert_user(user: UserSchema):
 
 def get_user(email: str):
     return users.find_one({"email": email})
+

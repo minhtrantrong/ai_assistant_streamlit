@@ -7,6 +7,7 @@ short_term = deque(maxlen=5)
 from datetime import datetime
 from bson.objectid import ObjectId as objectid
 import streamlit as st
+
 """
 function to format chat history after get user_message and bot_message from chatSchema
 """
@@ -30,6 +31,7 @@ def insert_chat(chat: ChatSchema):
     chat_str = format_chat(chat)
     if len(short_term) == short_term.maxlen:
         short_term.popleft()  
+    print(chat_str)
     short_term.append(chat_str)
 
 """
@@ -47,3 +49,43 @@ return short term memory
 def get_short_term_chats():
     return list(short_term)
 
+def get_history_chat():
+    return list(chats.find({"session_id": "cb9caadc-20b3-4c10-9969-669beb8a62cb"}))
+
+
+def select_chat(id: str):
+    obj_id = objectid(str(id).strip())
+    chat = chats.find_one({"_id": obj_id})
+
+    if not chat:
+        st.warning(f"⚠️Can not find chat with ID: {obj_id}")
+        return
+
+    raw_messages = chat.get("message", [])
+    messages = []
+
+    for m in raw_messages:
+        if isinstance(m, dict):
+            user_msg = m.get("user_message")
+            bot_msg = m.get("bot_message")
+            print(user_msg,bot_msg)
+            if user_msg:
+                messages.append({
+                    "role": "user",
+                    "content": user_msg,
+                    "avatar": "🧑‍💻"
+                })
+            if bot_msg:
+                messages.append({
+                    "role": "assistant",
+                    "content": bot_msg,
+                    "avatar": "🤖"
+                })
+        else:
+            messages.append({
+                "role": "user",
+                "content": str(m),
+                "avatar": "🧑‍💻"
+            })
+    st.query_params["id"] = str(obj_id)
+    st.session_state.messages = messages
